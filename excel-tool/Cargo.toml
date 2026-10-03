@@ -1,0 +1,19 @@
+[package]
+name = "excel-tool"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+polars = { version = "0.44", features = [
+    "lazy",
+    "csv",
+    "dtype-full",
+    "strings",
+    "round_series",
+    "is_in",
+] }
+calamine = "0.26"                 # read XLSX
+rust_xlsxwriter = "0.79"          # write XLSX (fast)
+anyhow = "1"
+regex = "1"
+dialoguer = "0.11"                # interactive prompts
