@@ -1,4 +1,5 @@
 import os
+import threading
 os.environ.setdefault("POLARS_MAX_THREADS", "8")  # set before Polars import
 
 import shutil
@@ -158,12 +159,38 @@ async def process(token: str = Form(...), payload: str = Form(...)):
 
             # ---------- EXPORT ----------
             yield emit("log", message=f"Exporting {df.height:,} rows to XLSX…")
+
+
+            # Run export in a background thread so we can stream progress
+            export_done = {"flag": False, "error": None}
             te = time.perf_counter()
-            try:
-                export_xlsx(df, header_map, result_cols, str(out_path), req.place, lambda m: None)
-            except Exception as e:
-                yield emit("error", message=f"Export failed: {e}")
+
+            def _do_export():
+                try:
+                    export_xlsx(df, header_map, result_cols, str(out_path), req.place, lambda m: None)
+                except Exception as e:
+                    export_done["error"] = str(e)
+                finally:
+                    export_done["flag"] = True
+
+            th = threading.Thread(target=_do_export, daemon=True)
+            th.start()
+
+            # Estimated throughput (rows/sec) — tune this after observing real numbers
+            EST_RATE = 48000
+
+            while not export_done["flag"]:
+                await asyncio.sleep(0.25)
+                elapsed = time.perf_counter() - te
+                rows_done = min(int(elapsed * EST_RATE), df.height)
+                rate = rows_done / elapsed if elapsed > 0 else 0
+                yield emit("progress", stage="Export", current=rows_done, total=df.height, rate=int(rate))
+
+            th.join()
+            if export_done["error"]:
+                yield emit("error", message=f"Export failed: {export_done['error']}")
                 return
+
             timings["Export"] = time.perf_counter() - te
             yield emit("log", message=f"⏱ Export: {timings['Export']:.3f}s")
 
