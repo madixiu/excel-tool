@@ -1,12 +1,42 @@
 import axios from "axios";
 
-const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const BASE = import.meta.env.VITE_API_URL || "";
 
-export async function uploadFile(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  const { data } = await axios.post(`${BASE}/api/upload`, fd);
-  return data; // { token, filename }
+/**
+ * Upload a file with progress reporting.
+ * @param {File} file - The file to upload
+ * @param {(percent: number) => void} [onProgress] - Called with 0–100 as the upload progresses
+ */
+export function uploadFile(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const fd = new FormData();
+    fd.append("file", file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${BASE}/api/upload`);
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolve(JSON.parse(xhr.responseText));
+        } catch (err) {
+          reject(new Error("Invalid JSON response from upload"));
+        }
+      } else {
+        reject(new Error(`Upload failed: HTTP ${xhr.status}`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Network error during upload"));
+    xhr.ontimeout = () => reject(new Error("Upload timed out"));
+    xhr.send(fd);
+  });
 }
 
 export async function inspectFile(token) {
@@ -47,10 +77,15 @@ export async function processFile({ token, payload, onEvent }) {
       buffer = buffer.slice(idx + 2);
 
       const lines = raw.split("\n");
-      const type = lines.find(l => l.startsWith("event:"))?.slice(6).trim() || "message";
-      const dataLine = lines.find(l => l.startsWith("data:"))?.slice(5).trim();
+      const type =
+        lines.find((l) => l.startsWith("event:"))?.slice(6).trim() || "message";
+      const dataLine = lines.find((l) => l.startsWith("data:"))?.slice(5).trim();
       if (!dataLine) continue;
-      onEvent({ type, data: JSON.parse(dataLine) });
+      try {
+        onEvent({ type, data: JSON.parse(dataLine) });
+      } catch (err) {
+        console.warn("Failed to parse SSE event:", raw);
+      }
     }
   }
 }

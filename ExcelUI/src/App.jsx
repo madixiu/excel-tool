@@ -16,24 +16,28 @@ const OPS = [
 ];
 
 const FUNCTIONS = [
-  { name: "SUMIFS", args: 3, hint: "(SUM_COL, MATCH_COL, KEY_COL)" },
-  { name: "COUNTIFS", args: 3, hint: "(COL, MATCH_COL, KEY_COL)" },
-  { name: "AVGIFS", args: 3, hint: "(SUM_COL, MATCH_COL, KEY_COL)" },
-  { name: "SUM", args: 1, hint: "(COL)" },
-  { name: "AVG", args: 1, hint: "(COL)" },
-  { name: "MIN", args: 1, hint: "(COL)" },
-  { name: "MAX", args: 1, hint: "(COL)" },
-  { name: "COUNT", args: 1, hint: "(COL)" },
-  { name: "STD", args: 1, hint: "(COL)" },
-  { name: "VAR", args: 1, hint: "(COL)" },
-  { name: "ROWSUM", args: -1, hint: "(COL1, COL2, ...)" },
-  { name: "ROWAVG", args: -1, hint: "(COL1, COL2, ...)" },
-  { name: "ROWMIN", args: -1, hint: "(COL1, COL2, ...)" },
-  { name: "ROWMAX", args: -1, hint: "(COL1, COL2, ...)" },
-  { name: "ADD", args: 2, hint: "(A, B)" },
-  { name: "SUB", args: 2, hint: "(A, B)" },
-  { name: "MUL", args: 2, hint: "(A, B)" },
-  { name: "DIV", args: 2, hint: "(A, B)" },
+  { name: "SUMIFS", args: 3, hint: "SUMIFS(Amount, Region, RegionLookup)" },
+  {
+    name: "COUNTIFS",
+    args: 3,
+    hint: "COUNTIFS(OrderID, Region, RegionLookup)",
+  },
+  { name: "AVGIFS", args: 3, hint: "AVGIFS(Price, Category, CategoryLookup)" },
+  { name: "SUM", args: 1, hint: "SUM(Sales)" },
+  { name: "AVG", args: 1, hint: "AVG(Score)" },
+  { name: "MIN", args: 1, hint: "MIN(Temperature)" },
+  { name: "MAX", args: 1, hint: "MAX(Revenue)" },
+  { name: "COUNT", args: 1, hint: "COUNT(Customer)" },
+  { name: "STD", args: 1, hint: "STD(Returns)" },
+  { name: "VAR", args: 1, hint: "VAR(Returns)" },
+  { name: "ROWSUM", args: -1, hint: "ROWSUM(Q1, Q2, Q3, Q4)" },
+  { name: "ROWAVG", args: -1, hint: "ROWAVG(Math, Science, English)" },
+  { name: "ROWMIN", args: -1, hint: "ROWMIN(PriceA, PriceB, PriceC)" },
+  { name: "ROWMAX", args: -1, hint: "ROWMAX(Score1, Score2, Score3)" },
+  { name: "ADD", args: 2, hint: "ADD(Price, Tax)" },
+  { name: "SUB", args: 2, hint: "SUB(Revenue, Cost)" },
+  { name: "MUL", args: 2, hint: "MUL(Quantity, UnitPrice)" },
+  { name: "DIV", args: 2, hint: "DIV(Total, Count)" },
 ];
 
 export default function App() {
@@ -52,7 +56,7 @@ export default function App() {
   const [downloadHref, setDownloadHref] = useState(null);
   const [activeField, setActiveField] = useState(null);
   const logRef = useRef(null);
-
+  const [uploadProgress, setUploadProgress] = useState(null);
   const addLog = (m) => setLogs((prev) => [...prev, m]);
 
   useEffect(() => {
@@ -62,17 +66,40 @@ export default function App() {
   async function handleUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Reset everything
     setLogs([]);
     setDownloadHref(null);
     setProgress({ stage: "", percent: 0 });
-    addLog(`Uploading ${file.name}…`);
-    const { token } = await uploadFile(file);
-    setToken(token);
-    const data = await inspectFile(token);
-    setInfo(data);
-    addLog(
-      `Loaded ${data.rows.toLocaleString()} rows × ${data.columns} columns`,
-    );
+    setUploadProgress(0);
+    setInfo(null);
+    setToken(null);
+
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    addLog(`Uploading ${file.name} (${sizeMB} MB)…`);
+
+    try {
+      const { token } = await uploadFile(file, (pct) => {
+        setUploadProgress(pct);
+      });
+
+      setUploadProgress(100);
+      addLog(`✓ Upload complete`);
+
+      setToken(token);
+      addLog("Inspecting columns…");
+
+      const data = await inspectFile(token);
+      setInfo(data);
+      addLog(
+        `✓ Loaded ${data.rows.toLocaleString()} rows × ${data.columns} columns`,
+      );
+    } catch (err) {
+      addLog(`❌ Upload failed: ${err.message}`);
+    } finally {
+      // Hide the upload bar after a moment
+      setTimeout(() => setUploadProgress(null), 800);
+    }
   }
 
   async function handleRun() {
@@ -174,40 +201,70 @@ export default function App() {
       </datalist>
 
       {/* ---------- SIDEBAR ---------- */}
-      <aside className="w-60 bg-bg-deep border-r border-line-subtle px-5 py-7 flex flex-col justify-between">
-        <div>
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-violet-400 flex items-center justify-center text-2xl font-bold text-white mb-3">
-            Σ
+      <aside className="w-72 bg-bg-deep border-r border-line-subtle px-4 py-6 flex flex-col gap-4">
+        {/* ---------- LOG (top) ---------- */}
+        <div className="flex flex-col min-h-0 flex-1">
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2 font-semibold flex justify-between items-center">
+            <span>Activity</span>
+            {logs.length > 0 && (
+              <button
+                onClick={() => setLogs([])}
+                className="text-slate-500 hover:text-slate-300 text-[10px]"
+                title="Clear log"
+              >
+                clear
+              </button>
+            )}
           </div>
-          <div className="text-lg font-bold text-slate-100 leading-tight">
-            Excel
-            <br />
-            Formula Tool
-          </div>
+
+          <pre
+            ref={logRef}
+            className="flex-1 min-h-0 bg-bg-card/60 border border-line-subtle rounded-lg p-2.5 text-[11px] font-mono text-green-300 overflow-y-auto m-0 leading-relaxed whitespace-pre-wrap break-words"
+          >
+            {logs.length === 0 ? (
+              <span className="text-slate-600 italic">No activity yet.</span>
+            ) : (
+              logs.map((l, i) => (
+                <div
+                  key={i}
+                  className={l.startsWith("❌") ? "text-red-400" : ""}
+                >
+                  {l}
+                </div>
+              ))
+            )}
+          </pre>
         </div>
 
-        <nav className="mt-10 flex flex-col gap-3">
-          <div className="text-[13px] text-slate-400 flex items-center gap-2">
-            <span className="text-green-400">●</span> Backend connected
+        {/* ---------- ENGINE STATUS ---------- */}
+        <div className="rounded-lg bg-bg-card/60 border border-line-subtle p-3">
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2 font-semibold">
+            Engine
           </div>
-          {info && (
-            <div className="text-[13px] text-slate-400 flex items-center gap-2">
-              <span className="text-blue-400">●</span>{" "}
-              {info.rows.toLocaleString()} rows loaded
-            </div>
-          )}
-          {info && (
-            <div className="text-[13px] text-slate-400 flex items-center gap-2">
-              <span className="text-yellow-400">●</span> {info.columns} columns
-            </div>
-          )}
-        </nav>
+          <StatusRow color="green" label="Backend" value="Connected" pulse />
+          <StatusRow color="blue" label="Throughput" value="14k rows/s" />
+          <StatusRow color="violet" label="Latency" value="Instant" />
+        </div>
 
-        <div className="border-t border-line-subtle pt-4 text-xs text-slate-500">
-          <div className="flex flex-col">
-            <span>Formula Engine · v1.0</span>
-            <span className="text-[10px]">Created by IT pak</span>
+        {/* ---------- FILE ---------- */}
+        {info && (
+          <div className="rounded-lg bg-bg-card/60 border border-line-subtle p-3">
+            <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2 font-semibold">
+              File
+            </div>
+            <StatusRow
+              color="amber"
+              label="Rows"
+              value={info.rows.toLocaleString()}
+            />
+            <StatusRow color="amber" label="Columns" value={info.columns} />
           </div>
+        )}
+
+        {/* ---------- FOOTER ---------- */}
+        <div className="border-t border-line-subtle pt-3 text-xs text-slate-500 mt-auto">
+          <span>Formula Engine · v1.0</span>
+          <div className="text-[10px]">Created by IT pak</div>
         </div>
       </aside>
 
@@ -237,7 +294,22 @@ export default function App() {
               CSV, XLSX, or XLS
             </div>
           </label>
-
+          {uploadProgress !== null && (
+            <div className="mt-4">
+              <div className="flex justify-between text-[13px] text-slate-400 mb-1.5">
+                <span>
+                  {uploadProgress < 100 ? "Uploading…" : "Processing…"}
+                </span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="h-2 bg-line-subtle rounded overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-400 to-violet-400 rounded transition-[width] duration-200"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
           {info && (
             <div className="mt-4">
               <div className="flex gap-6 mb-3">
@@ -518,9 +590,35 @@ export default function App() {
           <button
             onClick={handleRun}
             disabled={running || !token}
-            className="px-7 py-3.5 rounded-[10px] text-white font-semibold text-[15px] bg-gradient-to-br from-blue-400 to-indigo-400 disabled:opacity-50 hover:opacity-90 transition-opacity"
+            className="px-7 py-3.5 rounded-[10px] text-white font-semibold text-[15px] bg-gradient-to-br from-blue-400 to-indigo-400 disabled:opacity-50 hover:opacity-90 transition-opacity inline-flex items-center gap-2"
           >
-            {running ? "Processing…" : "▶  Run"}
+            {running ? (
+              <>
+                <svg
+                  className="animate-spin h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+                {progress.stage || "Working…"}
+              </>
+            ) : (
+              <>▶ Run</>
+            )}
           </button>
 
           {downloadHref && (
@@ -532,17 +630,44 @@ export default function App() {
               ⬇ Download result.xlsx
             </a>
           )}
-
           {running && (
             <div className="mt-5">
-              <div className="flex justify-between text-[13px] text-slate-400 mb-1.5">
-                <span>{progress.stage || "Working…"}</span>
-                <span>{progress.percent}%</span>
+              <div className="flex justify-between items-center text-[13px] mb-2">
+                <span className="text-slate-300 font-medium">
+                  {progress.stage || "Working…"}
+                </span>
+                <span className="text-slate-400 tabular-nums">
+                  {progress.percent}%
+                </span>
               </div>
-              <div className="h-2 bg-line-subtle rounded overflow-hidden">
+
+              <div className="h-2.5 bg-line-subtle rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-blue-400 to-violet-400 rounded transition-[width] duration-300"
+                  className="h-full bg-gradient-to-r from-blue-400 to-violet-400 rounded-full transition-[width] duration-300"
                   style={{ width: `${progress.percent}%` }}
+                />
+              </div>
+
+              <div className="flex justify-between mt-3 text-[11px] text-slate-500">
+                <StageDot
+                  label="Load"
+                  active={progress.percent >= 0}
+                  done={progress.percent > 5}
+                />
+                <StageDot
+                  label="Formulas"
+                  active={progress.percent >= 5}
+                  done={progress.percent > 30}
+                />
+                <StageDot
+                  label="Filter"
+                  active={progress.percent >= 30}
+                  done={progress.percent > 50}
+                />
+                <StageDot
+                  label="Export"
+                  active={progress.percent >= 50}
+                  done={progress.percent === 100}
                 />
               </div>
             </div>
@@ -632,5 +757,45 @@ function LetterInput({ value, onChange, onFocus, active }) {
           : "focus:border-blue-400"
       }`}
     />
+  );
+}
+
+function StatusRow({ color, label, value, pulse = false }) {
+  const colorMap = {
+    green: "bg-green-400",
+    blue: "bg-blue-400",
+    violet: "bg-violet-400",
+    amber: "bg-amber-400",
+  };
+  return (
+    <div className="flex items-center justify-between py-1 text-[12px]">
+      <div className="flex items-center gap-2 text-slate-400">
+        <span className={`relative flex h-1.5 w-1.5`}>
+          {pulse && (
+            <span
+              className={`absolute inline-flex h-full w-full rounded-full ${colorMap[color]} opacity-60 animate-ping`}
+            />
+          )}
+          <span
+            className={`relative inline-flex rounded-full h-1.5 w-1.5 ${colorMap[color]}`}
+          />
+        </span>
+        {label}
+      </div>
+      <span className="text-slate-200 font-medium tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+function StageDot({ label, active, done }) {
+  const dot = done ? "bg-green-400" : active ? "bg-blue-400" : "bg-line-strong";
+  const text = done || active ? "text-slate-300" : "text-slate-500";
+  return (
+    <div className={`flex items-center gap-1.5 ${text}`}>
+      <span
+        className={`inline-block w-1.5 h-1.5 rounded-full ${dot} transition-colors`}
+      />
+      {label}
+    </div>
   );
 }

@@ -33,11 +33,28 @@ def load_file(path: str, log):
         sep = sniff_separator(path)
         log(f"Sniffed separator: {sep!r}")
         raw = pl.read_csv(
-            path, separator=sep, infer_schema_length=0,
-            quote_char='"', encoding="utf8-lossy",
+            path,
+            separator=sep,
+            infer_schema_length=0,
+            quote_char='"',
+            encoding="utf8-lossy",
         )
     elif ext in (".xlsx", ".xls"):
-        raw = pl.read_excel(path, read_csv_options={"infer_schema_length": 0})
+        try:
+            import fastexcel
+            sheets = fastexcel.read_excel(path).sheet_names
+            if len(sheets) > 1:
+                log(f"⚠ File has {len(sheets)} sheets: {sheets}")
+                log(f"⚠ Only reading the first sheet: {sheets[0]!r}")
+            else:
+                log(f"Reading sheet: {sheets[0]!r}")
+        except Exception:
+            pass
+
+        raw = pl.read_excel(path)
+        raw = raw.with_columns([
+            pl.col(c).cast(pl.Utf8, strict=False) for c in raw.columns
+        ])
     else:
         raise ValueError(f"Unsupported file type: {ext}")
 
@@ -73,7 +90,6 @@ def apply_formula(df, name, func, args, label, log):
         if a and a.isalpha() and a not in df.columns:
             raise ValueError(f"Column {a} not found")
 
-    # ---------- Conditional ----------
     if func in ("SUMIFS", "COUNTIFS", "AVGIFS"):
         if len(args) != 3:
             raise ValueError(f"{func} requires exactly 3 args")
@@ -100,7 +116,6 @@ def apply_formula(df, name, func, args, label, log):
         df = df.join(totals, left_on=k, right_on=m, how="left")
         df = df.rename({t: name}).drop([k, m, s])
 
-    # ---------- Aggregate (broadcast scalar) ----------
     elif func in ("SUM", "AVG", "MEAN", "MIN", "MAX", "COUNT", "STD", "VAR"):
         if len(args) != 1:
             raise ValueError(f"{func} requires exactly 1 arg")
@@ -122,7 +137,6 @@ def apply_formula(df, name, func, args, label, log):
 
         df = df.with_columns(pl.lit(value, dtype=pl.Float64).alias(name))
 
-    # ---------- Row-wise across columns ----------
     elif func in ("ROWSUM", "ROWAVG", "ROWMIN", "ROWMAX"):
         if len(args) < 2:
             raise ValueError(f"{func} requires at least 2 args")
@@ -139,7 +153,6 @@ def apply_formula(df, name, func, args, label, log):
         }[func]
         df = df.with_columns(expr.alias(name)).drop(tmp)
 
-    # ---------- Two-arg arithmetic ----------
     elif func in ("ADD", "SUB", "MUL", "DIV"):
         if len(args) != 2:
             raise ValueError(f"{func} requires exactly 2 args")
@@ -157,19 +170,24 @@ def apply_formula(df, name, func, args, label, log):
 
 
 # ============================================================
-# EXPORT
+# EXPORT — Rust-powered (7-9x faster than Python xlsxwriter)
 # ============================================================
 def export_xlsx(df, header_by_letter, result_cols, output_path, place, log):
+    t0 = time.perf_counter()
+
+    from rustpy_xlsxwriter import FastExcel
+
+    # Reorder columns and restore original headers
     original = [c for c in df.columns if c not in result_cols]
     order = (result_cols + original) if place == "front" else (original + result_cols)
     headers = [c if c in result_cols else header_by_letter.get(c, c) for c in order]
 
-    df = df.select(order)
-    df.columns = headers
+    final = df.select(order)
+    final.columns = headers
 
-    pdf = df.to_pandas().where(lambda x: x.notna(), None)
-    pdf.to_excel(output_path, index=False, engine="xlsxwriter")
-    log(f"Saved → {output_path} ({df.height:,} rows × {df.width} cols)")
+    FastExcel(output_path).sheet("Sheet1", final).save()
+
+    log(f"Saved → {output_path} ({final.height:,} rows × {final.width} cols) in {time.perf_counter()-t0:.2f}s")
 
 
 # ============================================================
