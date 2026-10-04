@@ -3,6 +3,7 @@ anyio==4.15.1
 click==8.5.0
 et_xmlfile==2.0.0
 fastapi==0.115.6
+fastexcel==0.21.0
 h11==0.16.0
 httptools==0.8.0
 idna==3.20
@@ -18,6 +19,7 @@ python-dotenv==1.2.3
 python-multipart==0.0.20
 pytz==2026.4
 PyYAML==6.0.3
+rustpy-xlsxwriter==0.7.1
 six==1.17.0
 starlette==0.41.3
 typing_extensions==4.16.0
