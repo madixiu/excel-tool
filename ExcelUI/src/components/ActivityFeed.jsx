@@ -4,46 +4,188 @@ import { useEffect, useRef } from "react";
 function classify(line) {
   const l = line.toLowerCase();
 
-  if (line.startsWith("❌")) return { icon: "❌", type: "error",   color: "text-red-400",    bg: "bg-red-500/10",    border: "border-red-500/30" };
-  if (line.startsWith("✓") || line.startsWith("✅")) return { icon: "✅", type: "success", color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30" };
-  if (line.startsWith("⚠")) return { icon: "⚠️", type: "warning", color: "text-amber-400",   bg: "bg-amber-500/10",   border: "border-amber-500/30" };
+  if (line.startsWith("❌"))
+    return {
+      icon: "❌",
+      type: "error",
+      color: "text-red-400",
+      bg: "bg-red-500/10",
+      border: "border-red-500/30",
+    };
+  if (line.startsWith("✓") || line.startsWith("✅"))
+    return {
+      icon: "✅",
+      type: "success",
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/30",
+    };
+  if (line.startsWith("⚠"))
+    return {
+      icon: "⚠️",
+      type: "warning",
+      color: "text-amber-400",
+      bg: "bg-amber-500/10",
+      border: "border-amber-500/30",
+    };
 
-  if (l.includes("loading file"))   return { icon: "📥", type: "stage",  color: "text-blue-300",  bg: "bg-blue-500/10",   border: "border-blue-500/30" };
-  if (l.includes("loaded"))         return { icon: "📊", type: "info",   color: "text-sky-300",   bg: "bg-sky-500/10",    border: "border-sky-500/30" };
-  if (l.includes("formula"))        return { icon: "🧮", type: "stage",  color: "text-violet-300",bg: "bg-violet-500/10", border: "border-violet-500/30" };
-  if (l.includes("filter"))         return { icon: "🔎", type: "stage",  color: "text-indigo-300",bg: "bg-indigo-500/10", border: "border-indigo-500/30" };
-  if (l.includes("export") || l.includes("saving")) return { icon: "📤", type: "stage",  color: "text-fuchsia-300",bg: "bg-fuchsia-500/10", border: "border-fuchsia-500/30" };
-  if (l.includes("saved"))          return { icon: "💾", type: "success",color: "text-emerald-300",bg: "bg-emerald-500/10", border: "border-emerald-500/30" };
-  if (l.includes("sniffed"))        return { icon: "🔍", type: "info",   color: "text-slate-400", bg: "bg-slate-500/10",  border: "border-slate-500/20" };
+  if (l.includes("loading file"))
+    return {
+      icon: "📥",
+      type: "stage",
+      color: "text-blue-300",
+      bg: "bg-blue-500/10",
+      border: "border-blue-500/30",
+    };
+  if (l.includes("loaded"))
+    return {
+      icon: "📊",
+      type: "info",
+      color: "text-sky-300",
+      bg: "bg-sky-500/10",
+      border: "border-sky-500/30",
+    };
+  if (l.includes("formula"))
+    return {
+      icon: "🧮",
+      type: "stage",
+      color: "text-violet-300",
+      bg: "bg-violet-500/10",
+      border: "border-violet-500/30",
+    };
+  if (l.includes("filter"))
+    return {
+      icon: "🔎",
+      type: "stage",
+      color: "text-indigo-300",
+      bg: "bg-indigo-500/10",
+      border: "border-indigo-500/30",
+    };
+  if (l.includes("export") || l.includes("saving"))
+    return {
+      icon: "📤",
+      type: "stage",
+      color: "text-fuchsia-300",
+      bg: "bg-fuchsia-500/10",
+      border: "border-fuchsia-500/30",
+    };
+  if (l.includes("saved"))
+    return {
+      icon: "💾",
+      type: "success",
+      color: "text-emerald-300",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/30",
+    };
+  if (l.includes("sniffed"))
+    return {
+      icon: "🔍",
+      type: "info",
+      color: "text-slate-400",
+      bg: "bg-slate-500/10",
+      border: "border-slate-500/20",
+    };
 
   // Timing lines "⏱ Something: 1.234s"
   if (line.startsWith("⏱")) {
     const match = line.match(/⏱\s*(.+?):\s*([\d.]+)s/);
     if (match) {
       const [, stage, time] = match;
-      return { icon: "⏱", type: "timing", color: "text-cyan-300", bg: "bg-cyan-500/10", border: "border-cyan-500/30", stage, time };
+      return {
+        icon: "⏱",
+        type: "timing",
+        color: "text-cyan-300",
+        bg: "bg-cyan-500/10",
+        border: "border-cyan-500/30",
+        stage,
+        time,
+      };
     }
-    return { icon: "⏱", type: "timing", color: "text-cyan-300", bg: "bg-cyan-500/10", border: "border-cyan-500/30" };
+    return {
+      icon: "⏱",
+      type: "timing",
+      color: "text-cyan-300",
+      bg: "bg-cyan-500/10",
+      border: "border-cyan-500/30",
+    };
   }
 
   // Timing summary block
   if (line.startsWith("━") || line.includes("TIMING SUMMARY")) {
-    return { icon: "📈", type: "summary", color: "text-slate-300", bg: "bg-slate-500/10", border: "border-slate-500/30" };
+    return {
+      icon: "📈",
+      type: "summary",
+      color: "text-slate-300",
+      bg: "bg-slate-500/10",
+      border: "border-slate-500/30",
+    };
   }
 
   // Column dropped counts "324,743 → 15,971 rows (308,772 dropped)"
   if (line.includes("→") && line.includes("rows")) {
-    return { icon: "🔢", type: "info", color: "text-teal-300", bg: "bg-teal-500/10", border: "border-teal-500/30" };
+    return {
+      icon: "🔢",
+      type: "info",
+      color: "text-teal-300",
+      bg: "bg-teal-500/10",
+      border: "border-teal-500/30",
+    };
   }
 
   // Formula result "res1: 13,657 rows filled"
   if (/^\s*\w+: [\d,]+ rows filled/.test(line)) {
     const match = line.match(/(\w+): ([\d,]+)/);
-    return { icon: "✅", type: "result", color: "text-emerald-300", bg: "bg-emerald-500/10", border: "border-emerald-500/30", name: match?.[1], count: match?.[2] };
+    return {
+      icon: "✅",
+      type: "result",
+      color: "text-emerald-300",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/30",
+      name: match?.[1],
+      count: match?.[2],
+    };
   }
 
   // Default
-  return { icon: "•", type: "plain", color: "text-slate-400", bg: "bg-slate-500/5", border: "border-transparent" };
+  return {
+    icon: "•",
+    type: "plain",
+    color: "text-slate-400",
+    bg: "bg-slate-500/5",
+    border: "border-transparent",
+  };
+}
+
+function localizeLog(line) {
+  return line
+    .replace("Loading file…", "در حال بارگذاری فایل…")
+    .replace("Formula ", "فرمول ")
+    .replace("Applying raw filter:", "اعمال فیلتر خام:")
+    .replace(/Applying (\d+) filter rule\(s\)…/, "در حال اعمال $1 قانون فیلتر…")
+    .replace("Exporting ", "در حال خروجی گرفتن از ")
+    .replace(" rows to XLSX…", " ردیف به فایل XLSX…")
+    .replace("Filter rule error:", "خطای قانون فیلتر:")
+    .replace("Filter failed:", "فیلتر ناموفق بود:")
+    .replace("Export failed:", "خروجی ناموفق بود:")
+    .replace("Upload failed:", "بارگذاری ناموفق بود:")
+    .replace(" rows filled", " ردیف تکمیل شد")
+    .replace("Loaded ", "بارگذاری شد: ")
+    .replace(" rows × ", " ردیف × ")
+    .replace(" columns", " ستون")
+    .replace(" saved", " ذخیره شد")
+    .replace("TOTAL", "مجموع");
+}
+
+function localizeStage(stage) {
+  return (
+    {
+      Load: "بارگذاری",
+      Formulas: "فرمول‌ها",
+      Formula: "فرمول",
+      Filter: "فیلتر",
+      Export: "خروجی",
+    }[stage] || stage
+  );
 }
 
 function ActivityItem({ line }) {
@@ -58,8 +200,8 @@ function ActivityItem({ line }) {
         <span className="text-base shrink-0">⏱</span>
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-baseline gap-2">
-            <span className="text-[11px] text-cyan-200 truncate font-medium">
-              {meta.stage}
+            <span className="text-[11px] text-cyan-700 truncate font-medium">
+              {localizeStage(meta.stage)}
             </span>
             <span className="text-[10px] text-cyan-400 tabular-nums font-semibold">
               {meta.time}s
@@ -82,11 +224,11 @@ function ActivityItem({ line }) {
       <div className="flex items-center gap-2 py-1.5 px-2 rounded border border-emerald-500/20 bg-emerald-500/5">
         <span className="text-base shrink-0">✅</span>
         <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-          <span className="text-[11px] text-emerald-200 truncate">
-            <span className="font-semibold">{meta.name}</span> computed
+          <span className="text-[11px] text-emerald-700 truncate">
+            <span className="font-semibold">{meta.name}</span> محاسبه شد
           </span>
           <span className="text-[10px] text-emerald-400 tabular-nums font-semibold shrink-0">
-            {meta.count} rows
+            {meta.count} ردیف
           </span>
         </div>
       </div>
@@ -103,11 +245,17 @@ function ActivityItem({ line }) {
     if (m) {
       const [, stage, time, pct, bar] = m;
       return (
-        <div className="flex items-center gap-2 py-1 px-2 rounded bg-slate-800/40 border border-slate-700/40 text-[11px]">
-          <span className="text-slate-400 w-20 shrink-0">{stage}</span>
-          <span className="text-slate-300 tabular-nums w-14 shrink-0">{time}s</span>
-          <span className="text-slate-500 tabular-nums w-12 shrink-0">{pct}%</span>
-          <div className="flex-1 h-1.5 bg-slate-700/40 rounded overflow-hidden">
+        <div className="flex items-center gap-2 py-1 px-2 rounded bg-slate-100 border border-slate-200 text-[11px]">
+          <span className="text-slate-400 w-20 shrink-0">
+            {localizeStage(stage)}
+          </span>
+          <span className="text-slate-700 tabular-nums w-14 shrink-0">
+            {time}s
+          </span>
+          <span className="text-slate-500 tabular-nums w-12 shrink-0">
+            {pct}%
+          </span>
+          <div className="flex-1 h-1.5 bg-slate-200 rounded overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-blue-500 to-violet-500"
               style={{ width: `${parseFloat(pct)}%` }}
@@ -122,8 +270,10 @@ function ActivityItem({ line }) {
     if (totalMatch) {
       return (
         <div className="flex items-center gap-2 py-1.5 px-2 rounded bg-gradient-to-r from-blue-500/10 to-violet-500/10 border border-blue-500/30 text-[11px] mt-1">
-          <span className="text-blue-300 font-semibold w-20 shrink-0">TOTAL</span>
-          <span className="text-white tabular-nums font-bold">
+          <span className="text-blue-300 font-semibold w-20 shrink-0">
+            TOTAL
+          </span>
+          <span className="text-slate-800 tabular-nums font-bold">
             {totalMatch[1]}s
           </span>
         </div>
@@ -132,7 +282,7 @@ function ActivityItem({ line }) {
 
     return (
       <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold pt-2 pb-1">
-        {line.replace(/━/g, "").trim()}
+        {localizeLog(line.replace(/━/g, "").trim())}
       </div>
     );
   }
@@ -143,7 +293,7 @@ function ActivityItem({ line }) {
       <div className="flex items-center gap-2 py-1.5 px-2 rounded border border-fuchsia-500/20 bg-fuchsia-500/5">
         <span className="text-base shrink-0">📤</span>
         <span className="text-[11px] text-fuchsia-200 truncate">
-          {line}
+          {localizeLog(line)}
         </span>
       </div>
     );
@@ -151,10 +301,12 @@ function ActivityItem({ line }) {
 
   // Default row
   return (
-    <div className={`flex items-start gap-2 py-1.5 px-2 rounded border ${meta.border} ${meta.bg}`}>
+    <div
+      className={`flex items-start gap-2 py-1.5 px-2 rounded border ${meta.border} ${meta.bg}`}
+    >
       <span className="text-sm shrink-0 leading-tight">{meta.icon}</span>
       <span className={`text-[11px] leading-relaxed break-words ${meta.color}`}>
-        {line.replace(/^[✓✅❌⚠]\s*/, "")}
+        {localizeLog(line.replace(/^[✓✅❌⚠]\s*/, ""))}
       </span>
     </div>
   );
@@ -165,15 +317,15 @@ export default function ActivityFeed({ logs, clearLogs, logRef }) {
     <div className="flex flex-col min-h-0 flex-1">
       <div className="flex justify-between items-center mb-2">
         <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">
-          Activity
+          فعالیت‌ها
         </div>
         {logs.length > 0 && (
           <button
             onClick={clearLogs}
             className="text-slate-500 hover:text-slate-300 text-[10px] px-1.5 py-0.5 rounded hover:bg-slate-700/40 transition-colors"
-            title="Clear activity"
+            title="پاک کردن فعالیت‌ها"
           >
-            clear
+            پاک کردن
           </button>
         )}
       </div>
@@ -186,10 +338,10 @@ export default function ActivityFeed({ logs, clearLogs, logRef }) {
           <div className="flex flex-col items-center justify-center h-full text-center py-8">
             <div className="text-3xl mb-2 opacity-40">⚡</div>
             <div className="text-[11px] text-slate-600 italic">
-              No activity yet
+              هنوز فعالیتی ثبت نشده است
             </div>
             <div className="text-[10px] text-slate-700 mt-1">
-              Upload a file to begin
+              برای شروع یک فایل بارگذاری کنید
             </div>
           </div>
         ) : (

@@ -51,21 +51,21 @@ export default function App() {
     setToken(null);
 
     const sizeMB = (file.size / 1024 / 1024).toFixed(1);
-    addLog(`Uploading ${file.name} (${sizeMB} MB)…`);
+    addLog(`در حال بارگذاری ${file.name} (${sizeMB} مگابایت)…`);
 
     try {
       const { token } = await uploadFile(file, (pct) => setUploadProgress(pct));
       setUploadProgress(100);
-      addLog(`✓ Upload complete`);
+      addLog(`✓ بارگذاری با موفقیت انجام شد`);
       setToken(token);
-      addLog("Inspecting columns…");
+      addLog("در حال بررسی ستون‌ها…");
       const data = await inspectFile(token);
       setInfo(data);
       addLog(
-        `✓ Loaded ${data.rows.toLocaleString()} rows × ${data.columns} columns`,
+        `✓ ${data.rows.toLocaleString()} ردیف و ${data.columns} ستون بارگذاری شد`,
       );
     } catch (err) {
-      addLog(`❌ Upload failed: ${err.message}`);
+      addLog(`❌ بارگذاری ناموفق بود: ${err.message}`);
     } finally {
       setTimeout(() => setUploadProgress(null), 800);
     }
@@ -76,22 +76,22 @@ export default function App() {
 
     for (const [i, f] of formulas.entries()) {
       if (!f.name?.trim()) {
-        alert(`Formula #${i + 1}: name is required`);
+        alert(`فرمول شماره ${i + 1}: نام خروجی الزامی است`);
         return;
       }
       if (!f.func?.trim()) {
-        alert(`Formula #${i + 1}: pick a function`);
+        alert(`فرمول شماره ${i + 1}: یک تابع انتخاب کنید`);
         return;
       }
       if (!f.args?.length || !f.args.every((a) => a?.trim())) {
-        alert(`Formula #${i + 1}: all args must be filled`);
+        alert(`فرمول شماره ${i + 1}: همه آرگومان‌ها را وارد کنید`);
         return;
       }
     }
 
     setLogs([]);
     setDownloadHref(null);
-    setProgress({ stage: "Starting", percent: 0 });
+    setProgress({ stage: "شروع", percent: 0 });
     setRunning(true);
     try {
       await processFile({
@@ -155,7 +155,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex min-h-screen bg-bg-base text-slate-200">
+    <div className="flex min-h-screen bg-bg-base text-slate-700" dir="rtl">
       <datalist id="function-list">
         {FUNCTIONS.map((f) => (
           <option key={f.name} value={f.name}>
@@ -174,11 +174,12 @@ export default function App() {
 
       <main className="flex-1 px-14 py-10 max-h-screen overflow-y-auto">
         <header className="mb-8">
-          <h1 className="text-[28px] font-bold text-slate-100 tracking-tight">
-            Process Excel files with formulas
+          <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">
+            پردازش فایل‌های اکسل با فرمول
           </h1>
-          <p className="text-slate-400 mt-1.5 text-[15px]">
-            Upload a file, define formulas and filters, download the result.
+          <p className="text-slate-500 mt-1.5 text-[15px]">
+            فایل را بارگذاری کنید، فرمول‌ها و فیلترها را تعیین کنید و نتیجه را
+            دریافت کنید.
           </p>
         </header>
 

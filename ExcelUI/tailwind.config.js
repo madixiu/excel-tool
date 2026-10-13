@@ -1,20 +1,17 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,jsx,ts,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       colors: {
         bg: {
-          base:   "#0f172a",
-          deep:   "#0a0f1e",
-          card:   "#131c31",
+          base: "#f4f7fb",
+          deep: "#eef2f7",
+          card: "#ffffff",
         },
         line: {
-          subtle: "#1e293b",
-          strong: "#334155",
+          subtle: "#e2e8f0",
+          strong: "#cbd5e1",
         },
       },
     },

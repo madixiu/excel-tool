@@ -8,35 +8,37 @@ body,
 #root {
   height: 100%;
   margin: 0;
-  font-family: "nunito", sans-serif ;
+  font-family: "nunito", Tahoma, sans-serif;
+  background: #f4f7fb;
+  color: #1e293b;
 }
 
-/* Custom dark scrollbar */
+/* Light scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0f1e;
+  background: #e2e8f0;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #94a3b8;
   border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #64748b;
 }
 
 /* Selection */
 ::selection {
-  background: rgba(96, 165, 250, 0.3);
-  color: #f1f5f9;
+  background: rgba(37, 99, 235, 0.16);
+  color: #1e3a8a;
 }
 
 /* ---------- Custom font ---------- */
 @font-face {
   font-family: "nunito";
-  src: url("./assets/fonts/Nunito.woff2") format("woff2");
+  src: url("./assets/fonts/Shabnam.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
