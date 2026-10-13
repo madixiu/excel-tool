@@ -27,3 +27,25 @@
 *.pkl.lock
 *.pkl.cached
 /__pycache__/
+
+# ============================================================
+# Environment files — NEVER commit secrets
+# ============================================================
+ExcelUI/.env
+# All .env variants
+.env
+.env.*
+.env.local
+.env.*.local
+
+# But keep the example template tracked
+!.env.example
+!.env.sample
+!.env.template
+
+# Nested .env files (frontend, backend subfolders)
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.sample
+!**/.env.template
