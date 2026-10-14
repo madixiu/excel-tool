@@ -267,25 +267,29 @@ function PageTabs() {
       <Link
         to="/"
         className={`relative z-10 inline-flex items-center justify-center px-5 py-3 rounded-xl text-sm font-medium transition-colors no-underline ${
-          !isCheatSheet ? "border-2 border-blue-300 border-dashed" : "border border-white hover:text-slate-900"
+          !isCheatSheet
+            ? "border-2 border-blue-300 border-dashed bg-green-100 text-green-800"
+            : "border border-white hover:text-slate-900"
         }`}
       >
         <span className="inline-flex items-center gap-1.5">
-          <FontAwesomeIcon icon={faScrewdriverWrench} aria-hidden="true" />
+          <FontAwesomeIcon className="text-inherit text-xl" icon={faScrewdriverWrench} aria-hidden="true" />
 
-          <span className="text-xl">ابزار</span>
+          <span className="text-xl text-black">ابزار</span>
         </span>
       </Link>
 
       <Link
         to="/cheat-sheet"
         className={`relative z-10 inline-flex items-center justify-center px-5 py-3 rounded-xl text-sm font-medium transition-colors no-underline ${
-          isCheatSheet ? "border-2 border-blue-300 border-dashed" : "border border-white hover:text-slate-900"
+          isCheatSheet
+            ? "border-2 border-blue-300 border-dashed bg-amber-100 text-amber-800" 
+            : "border border-white hover:text-slate-900"
         }`}
       >
         <span className="inline-flex items-center gap-1.5">
-          <FontAwesomeIcon icon={faBookOpen} aria-hidden="true" />
-          <span className="text-xl">راهنما</span>
+          <FontAwesomeIcon className="text-inherit text-xl" icon={faBookOpen} aria-hidden="true" />
+          <span className="text-xl text-black">راهنما</span>
         </span>
       </Link>
     </div>
