@@ -62,8 +62,8 @@ export default function Sidebar({ logs, clearLogs, logRef, info, progress }) {
 
       {/* FOOTER */}
       <div className="border-t border-line-subtle pt-3 text-xs text-slate-500 mt-auto">
-        <span>موتور فرمول · نسخه ۱.۰</span>
-        <div className="text-[10px]">ساخته‌شده توسط IT pak</div>
+        <span>version 0.9</span>
+        <div className="text-[10px]">by IT pak</div>
       </div>
     </aside>
   );
