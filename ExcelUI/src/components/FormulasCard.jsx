@@ -76,7 +76,7 @@ export default function FormulasCard({
                   value={f.name}
                   onChange={(e) => update({ name: e.target.value })}
                   placeholder="نام خروجی"
-                  className="flex-[2] bg-bg-deep border border-line-strong rounded-md px-3 py-2 text-slate-800 text-sm outline-none focus:border-blue-400"
+                  className="flex-[2] bg-bg-deep border border-line-strong rounded-md px-3 py-2 text-slate-800 text-sm outline-hidden focus:border-blue-400"
                 />
                 <span className="text-slate-500 px-1">=</span>
                 <input
@@ -85,7 +85,7 @@ export default function FormulasCard({
                   onChange={(e) => changeFunc(e.target.value.toUpperCase())}
                   placeholder="تابع"
                   spellCheck={false}
-                  className="bg-bg-deep border border-line-strong rounded-md px-3 py-2 text-violet-600 text-sm font-mono font-semibold text-center outline-none focus:border-blue-400"
+                  className="bg-bg-deep border border-line-strong rounded-md px-3 py-2 text-violet-600 text-sm font-mono font-semibold text-center outline-hidden focus:border-blue-400"
                   style={{
                     width: Math.max(
                       100,

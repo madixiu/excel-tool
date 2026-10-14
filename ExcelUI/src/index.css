@@ -1,15 +1,32 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Small extras that Tailwind doesn't cover well */
+/* ============================================================
+   THEME — moved here from tailwind.config.js
+   ============================================================ */
+@theme {
+  /* Backgrounds */
+  --color-bg-base: #f4f7fb;
+  --color-bg-deep: #eef2f7;
+  --color-bg-card: #ffffff;
+
+  /* Borders */
+  --color-line-subtle: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+
+  /* Fonts */
+  --font-sans: "nunito", Tahoma, system-ui, sans-serif;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
 html,
 body,
 #root {
   height: 100%;
   margin: 0;
-  font-family: "nunito", Tahoma, sans-serif;
-  background: #f4f7fb;
+  font-family: var(--font-sans);
+  background: var(--color-bg-base);
   color: #1e293b;
 }
 
@@ -35,7 +52,7 @@ body,
   color: #1e3a8a;
 }
 
-/* ---------- Custom font ---------- */
+/* Custom font */
 @font-face {
   font-family: "nunito";
   src: url("./assets/fonts/Shabnam.woff2") format("woff2");
@@ -44,7 +61,71 @@ body,
   font-display: swap;
 }
 
+/* Shimmer (for animated gradients) */
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.page-slide-right {
+  animation: slide-in-right 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-slide-left {
+  animation: slide-in-left 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-slide-right,
+  .page-slide-left {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   Modal animations
+   ============================================================ */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.94) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Utility classes */
+.anim-fade-in  { animation: fade-in  0.2s ease-out both; }
+.anim-fade-up  { animation: fade-up  0.3s ease-out both; }
+.anim-modal-in { animation: modal-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.anim-pop-in   { animation: pop-in   0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-fade-in,
+  .anim-fade-up,
+  .anim-modal-in,
+  .anim-pop-in {
+    animation: none;
+  }
 }

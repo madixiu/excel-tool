@@ -60,7 +60,7 @@ export default function FiltersCard({
                 <select
                   value={r.op}
                   onChange={(e) => updateRule(i, { op: e.target.value })}
-                  className="bg-bg-deep border border-line-strong rounded-md px-2.5 py-2 text-slate-100 text-sm outline-none min-w-[110px] focus:border-blue-400"
+                  className="bg-bg-deep border border-line-strong rounded-md px-2.5 py-2 text-slate-100 text-sm outline-hidden min-w-[110px] focus:border-blue-400"
                 >
                   {OPS.map((o) => (
                     <option key={o.v} value={o.v}>
@@ -73,7 +73,7 @@ export default function FiltersCard({
                   onChange={(e) => updateRule(i, { value: e.target.value })}
                   placeholder="مقدار"
                   disabled={["is_empty", "is_not_empty"].includes(r.op)}
-                  className={`flex-1 bg-bg-deep border border-line-strong rounded-md px-3 py-2 text-slate-900 text-sm outline-none focus:border-blue-400 ${
+                  className={`flex-1 bg-bg-deep border border-line-strong rounded-md px-3 py-2 text-slate-900 text-sm outline-hidden focus:border-blue-400 ${
                     ["is_empty", "is_not_empty"].includes(r.op)
                       ? "opacity-40"
                       : ""
@@ -85,7 +85,7 @@ export default function FiltersCard({
                     onChange={(e) =>
                       updateRule(i, { connector: e.target.value })
                     }
-                    className="bg-bg-deep border border-line-strong rounded-md px-2.5 py-2 text-slate-100 text-sm outline-none w-20 focus:border-blue-400"
+                    className="bg-bg-deep border border-line-strong rounded-md px-2.5 py-2 text-slate-100 text-sm outline-hidden w-20 focus:border-blue-400"
                   >
                     <option value="AND">AND</option>
                     <option value="OR">OR</option>
@@ -107,7 +107,7 @@ export default function FiltersCard({
             value={rawFilter}
             onChange={(e) => setRawFilter(e.target.value)}
             placeholder="AC != '-' AND TRIM(AC) != ''"
-            className="w-full bg-bg-deep border border-line-strong rounded-md px-3 py-2 text-slate-100 text-sm font-mono outline-none focus:border-blue-400"
+            className="w-full bg-bg-deep border border-line-strong rounded-md px-3 py-2 text-slate-100 text-sm font-mono outline-hidden focus:border-blue-400"
           />
         )}
       </div>

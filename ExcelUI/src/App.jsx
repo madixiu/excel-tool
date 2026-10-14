@@ -1,7 +1,13 @@
+import { Routes, Route, Link, useLocation } from "react-router-dom";
+import CheatSheet from "./pages/CheatSheet";
 import { useState, useRef, useEffect } from "react";
 import { uploadFile, inspectFile, processFile, downloadUrl } from "./api";
 import { FUNCTIONS } from "./constants";
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faBookOpen,
+  faScrewdriverWrench,
+} from "@fortawesome/free-solid-svg-icons";
 import Sidebar from "./components/Sidebar";
 import UploadCard from "./components/UploadCard";
 import FormulasCard from "./components/FormulasCard";
@@ -173,48 +179,126 @@ export default function App() {
       />
 
       <main className="flex-1 px-14 py-10 max-h-screen overflow-y-auto">
-        <header className="mb-8">
-          <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">
-            پردازش فایل‌های اکسل با فرمول
-          </h1>
-          <p className="text-slate-500 mt-1.5 text-[15px]">
-            فایل را بارگذاری کنید، فرمول‌ها و فیلترها را تعیین کنید و نتیجه را
-            دریافت کنید.
-          </p>
-        </header>
+        {/* ---------- Page tabs (top-right) ---------- */}
+        <div className="flex justify-end mb-6">
+          <PageTabs />
+        </div>
 
-        <UploadCard
-          info={info}
-          uploadProgress={uploadProgress}
-          onUpload={handleUpload}
-          onPickLetter={pickLetter}
-        />
-        <FormulasCard
-          formulas={formulas}
-          setFormulas={setFormulas}
-          activeField={activeField}
-          setActiveField={setActiveField}
-        />
-        <FiltersCard
-          filterRules={filterRules}
-          setFilterRules={setFilterRules}
-          useRawFilter={useRawFilter}
-          setUseRawFilter={setUseRawFilter}
-          rawFilter={rawFilter}
-          setRawFilter={setRawFilter}
-          activeField={activeField}
-          setActiveField={setActiveField}
-        />
-        <RunCard
-          place={place}
-          setPlace={setPlace}
-          running={running}
-          progress={progress}
-          downloadHref={downloadHref}
-          canRun={!!token}
-          onRun={handleRun}
-        />
+        {/* ---------- Routes with slide transition ---------- */}
+        <PageWrapper>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <header className="mb-8">
+                    <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">
+                      پردازش فایل‌های اکسل با فرمول
+                    </h1>
+                    <p className="text-slate-500 mt-1.5 text-[15px]">
+                      فایل را بارگذاری کنید، فرمول‌ها و فیلترها را تعیین کنید و
+                      نتیجه را دریافت کنید.
+                    </p>
+                  </header>
+
+                  <UploadCard
+                    info={info}
+                    uploadProgress={uploadProgress}
+                    onUpload={handleUpload}
+                    onPickLetter={pickLetter}
+                  />
+                  <FormulasCard
+                    formulas={formulas}
+                    setFormulas={setFormulas}
+                    activeField={activeField}
+                    setActiveField={setActiveField}
+                  />
+                  <FiltersCard
+                    filterRules={filterRules}
+                    setFilterRules={setFilterRules}
+                    useRawFilter={useRawFilter}
+                    setUseRawFilter={setUseRawFilter}
+                    rawFilter={rawFilter}
+                    setRawFilter={setRawFilter}
+                    activeField={activeField}
+                    setActiveField={setActiveField}
+                  />
+                  <RunCard
+                    place={place}
+                    setPlace={setPlace}
+                    running={running}
+                    progress={progress}
+                    downloadHref={downloadHref}
+                    canRun={!!token}
+                    onRun={handleRun}
+                  />
+                </>
+              }
+            />
+            <Route path="/cheat-sheet" element={<CheatSheet />} />
+          </Routes>
+        </PageWrapper>
       </main>
+    </div>
+  );
+}
+
+/* ---------- Top page switcher ---------- */
+function PageTabs() {
+  const location = useLocation();
+  const isCheatSheet = location.pathname === "/cheat-sheet";
+
+  return (
+    <div
+      dir="rtl"
+      className="relative inline-flex items-stretch gap-1 bg-white border border-line-strong rounded-2xl p-1 shadow-sm"
+    >
+      {/* Sliding background — sized & positioned by the active Link via data attribute */}
+      <div
+        className="absolute top-1 bottom-1 rounded-xl bg-linear-to-br from-blue-500 to-violet-500 shadow-sm transition-[transform,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        style={{
+          width: "var(--tab-width)",
+          transform: isCheatSheet
+            ? "translateX(var(--tab-offset))"
+            : "translateX(0)",
+        }}
+      />
+
+      <Link
+        to="/"
+        className={`relative z-10 inline-flex items-center justify-center px-5 py-3 rounded-xl text-sm font-medium transition-colors no-underline ${
+          !isCheatSheet ? "border-2 border-blue-300 border-dashed" : "border border-white hover:text-slate-900"
+        }`}
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <FontAwesomeIcon icon={faScrewdriverWrench} aria-hidden="true" />
+
+          <span className="text-xl">ابزار</span>
+        </span>
+      </Link>
+
+      <Link
+        to="/cheat-sheet"
+        className={`relative z-10 inline-flex items-center justify-center px-5 py-3 rounded-xl text-sm font-medium transition-colors no-underline ${
+          isCheatSheet ? "border-2 border-blue-300 border-dashed" : "border border-white hover:text-slate-900"
+        }`}
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <FontAwesomeIcon icon={faBookOpen} aria-hidden="true" />
+          <span className="text-xl">راهنما</span>
+        </span>
+      </Link>
+    </div>
+  );
+}
+function PageWrapper({ children }) {
+  const location = useLocation();
+  const isCheatSheet = location.pathname === "/cheat-sheet";
+  const slideClass = isCheatSheet ? "page-slide-right" : "page-slide-left";
+
+  return (
+    <div key={location.pathname} className={slideClass}>
+      {children}
     </div>
   );
 }
